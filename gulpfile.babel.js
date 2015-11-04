@@ -4,9 +4,19 @@ import gulpLoadPlugins from 'gulp-load-plugins';
 import browserSync from 'browser-sync';
 import del from 'del';
 import {stream as wiredep} from 'wiredep';
+import inject from 'gulp-inject';
 
 const $ = gulpLoadPlugins();
 const reload = browserSync.reload;
+
+gulp.task('index:test', () => {
+  var target = gulp.src('./test/index.html');
+  // It's not necessary to read the files (will speed up things), we're only after their paths:
+  var sources = gulp.src(['./app/scripts/**/*.js','./test/spec/**/*.js'], {read: false});
+
+  return target.pipe(inject(sources, {relative: true}))
+    .pipe(gulp.dest('./test'));
+});
 
 gulp.task('styles', () => {
   return gulp.src('app/styles/*.scss')
@@ -131,13 +141,15 @@ gulp.task('serve:test', () => {
     server: {
       baseDir: 'test',
       routes: {
-        '/bower_components': 'bower_components'
+        '/bower_components': 'bower_components',
+        '/app': 'app'
       }
     }
   });
 
   gulp.watch('test/spec/**/*.js').on('change', reload);
-  gulp.watch('test/spec/**/*.js', ['lint:test']);
+  gulp.watch('test/spec/**/*.js', ['index:test','lint:test']);
+  gulp.watch('app/scripts/**/*.js', ['index:test','lint:test']);
 });
 
 // inject bower components
