@@ -1,3 +1,5 @@
+/* globals linkedList*/
+
 (function () {
   'use strict';
 
